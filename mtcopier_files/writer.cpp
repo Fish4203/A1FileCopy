@@ -2,19 +2,43 @@
  * startup code provided by Paul Miller for COSC1114 - Operating Systems
  * Principles
  **/
-#include "writer.h"
 
-#include "reader.h"
+#include "writer.h"
+pthread_mutex_t wl;
 
 /**
- * implement these functions requred for the writer class
+ * provide your implementation for the writer functions here
  **/
-void writer::init(const std::string& name) {}
+writer::writer(const std::string outfile, std::deque<std::string> *queue) {
+    this->queue = queue;
 
-void writer::run() {}
+    this->out.open(outfile);
+}
 
-void* writer::runner(void* arg) { return nullptr; }
+writer::~writer() {
+    this->out.close();
+}
 
-void writer::append(const std::string& line) {}
+void *writer::runner(void * args) {
 
-void writer::setfinished() {}
+    while (true) {
+        pthread_mutex_lock(&wl);
+        if ((*(writer*)args).queue->empty()) {
+            usleep(1);
+        } else {
+
+            (*(writer*)args).out << (*(writer*)args).queue->front() << std::endl;
+            (*(writer*)args).queue->pop_front();
+        }
+        pthread_mutex_unlock(&wl);
+    }
+}
+
+void writer::run() {
+    pthread_t threads[5];
+    int i;
+
+    for( i = 0; i < 5; i++ ) {
+        pthread_create(&threads[i], NULL, writer::runner, this);
+    }
+}

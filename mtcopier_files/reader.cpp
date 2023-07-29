@@ -3,16 +3,42 @@
  * Principles
  **/
 #include "reader.h"
+#include <functional>
+pthread_mutex_t rl;
 
-#include "writer.h"
 
-/**
- * implement the functions needed for this class
- **/
-std::ifstream reader::in;
+reader::reader(const std::string infile, std::deque<std::string> *queue) {
+    this->queue = queue;
 
-void reader::init(const std::string& name) {}
+    this->in.open(infile);
+}
 
-void reader::run() {}
+reader::~reader() {
+    this->in.close();
+}
 
-void* reader::runner(void* arg) { return nullptr; }
+void *reader::runner(void * args) {
+    std::string s;
+
+    while (true) {
+        pthread_mutex_lock(&rl);
+        if (getline((*(reader*)args).in, s)) {
+            (*(reader*)args).queue->push_back(s);
+        } else {
+            (*(reader*)args).queue->push_back(s);
+            pthread_exit(NULL);
+        }
+        pthread_mutex_unlock(&rl);
+    }
+}
+
+void reader::run() {
+
+
+    pthread_t threads[5];
+    int i;
+
+    for( i = 0; i < 5; i++ ) {
+        pthread_create(&threads[i], NULL, reader::runner, this);
+    }
+}

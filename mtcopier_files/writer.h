@@ -2,31 +2,25 @@
  * startup code provided by Paul Miller for COSC1114 - Operating Systems
  * Principles
  **/
-#include <pthread.h>
-
-#include <deque>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <deque>
+#include <unistd.h>
 #ifndef WRITER
 #define WRITER
 class writer {
    public:
     /**
-     * Please note that methods and data need to be static as there's a
-     * variety of information that needs to be coordinated between writers
-     * such as locks and other shared data. Also, as the pthread library
-     * is a c library, it does not know about classes so ruuner in particular
-     * needs to be static. You can pass in instances into the function as
-     * pointers though.
+     * creates the writer instance that writes out to the file
      **/
-    static void init(const std::string& name);
-    static void* runner(void*);
+    writer(const std::string outfile, std::deque<std::string> *queue);
+    ~writer();
+    static void* runner(void* args);
     void run();
-    static void append(const std::string& line);
 
    private:
-    static std::ofstream out;
-    static std::deque<std::string> queue;
+    std::ofstream out;
+    std::deque<std::string> *queue;
 };
 #endif
