@@ -14,6 +14,10 @@ writer::writer(const std::string outfile, std::deque<std::string> *queue) {
     this->out.open(outfile);
 }
 
+writer::~writer() {
+    this->out.close();
+}
+
 void writer::run() {
     this->out << this->queue->front() << std::endl;
     this->queue->pop_front();

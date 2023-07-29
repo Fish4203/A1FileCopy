@@ -14,6 +14,7 @@ class reader {
      * writer's queue
      */
     reader(const std::string infile, std::deque<std::string> *queue);
+    ~reader();
     /* perform the reading from the file */
     bool run();
 

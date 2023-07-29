@@ -23,6 +23,8 @@ int main(int argc, char** argv) {
         write.run();
     }
 
+    delete queue;
+
 
     return EXIT_SUCCESS;
 }

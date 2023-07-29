@@ -11,6 +11,10 @@ reader::reader(const std::string infile, std::deque<std::string> *queue) {
     this->in.open(infile);
 }
 
+reader::~reader() {
+    this->in.close(); 
+}
+
 bool reader::run() {
     std::string s;
 
