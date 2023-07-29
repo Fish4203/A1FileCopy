@@ -5,6 +5,20 @@
 #include "reader.h"
 #include <functional>
 
-reader::reader(const std::string& name, writer& mywriter) {}
+reader::reader(const std::string infile, std::deque<std::string> *queue) {
+    this->queue = queue;
 
-void reader::run() {}
+    this->in.open(infile);
+}
+
+bool reader::run() {
+    std::string s;
+
+    if (getline(this->in, s)) {
+        this->queue->push_back(s);
+        return true;
+    } else {
+        this->queue->push_back(s);
+        return false;
+    }
+}

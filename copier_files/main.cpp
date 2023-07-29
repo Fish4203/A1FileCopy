@@ -9,5 +9,20 @@
 int main(int argc, char** argv) {
     /* check command line arguments */
     /* load the file and copy it to the destination */
+    std::string infile = argv[1];
+    std::string outfile = argv[2];
+
+    std::deque<std::string> *queue = new std::deque<std::string>;
+
+    reader read = reader(infile, queue);
+    writer write = writer(outfile, queue);
+    bool running = true;
+
+    while (running) {
+        running = read.run();
+        write.run();
+    }
+
+
     return EXIT_SUCCESS;
 }

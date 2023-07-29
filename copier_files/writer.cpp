@@ -8,8 +8,13 @@
 /**
  * provide your implementation for the writer functions here
  **/
-writer::writer(const std::string& name) {}
+writer::writer(const std::string outfile, std::deque<std::string> *queue) {
+    this->queue = queue;
 
-void writer::run() {}
+    this->out.open(outfile);
+}
 
-void writer::append(const std::string& line) {}
+void writer::run() {
+    this->out << this->queue->front() << std::endl;
+    this->queue->pop_front();
+}

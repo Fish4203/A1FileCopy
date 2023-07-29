@@ -13,19 +13,14 @@ class writer {
     /**
      * creates the writer instance that writes out to the file
      **/
-    writer(const std::string& name);
+    writer(const std::string outfile, std::deque<std::string> *queue);
     /**
      * does the actual writing
      **/
     void run();
-    /**
-     * appends a line from the file read in to be output ... needed by the
-     * reader class
-     **/
-    void append(const std::string& line);
 
    private:
     std::ofstream out;
-    std::deque<std::string> queue;
+    std::deque<std::string> *queue;
 };
 #endif

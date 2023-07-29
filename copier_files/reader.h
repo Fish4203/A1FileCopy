@@ -13,12 +13,12 @@ class reader {
     /* create a reader that reads each line of the file and appends it to the
      * writer's queue
      */
-    reader(const std::string& name, writer& mywriter);
+    reader(const std::string infile, std::deque<std::string> *queue);
     /* perform the reading from the file */
-    void run();
+    bool run();
 
    private:
     std::ifstream in;
-    writer& thewriter;
+    std::deque<std::string> *queue;
 };
 #endif
