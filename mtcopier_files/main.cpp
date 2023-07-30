@@ -19,12 +19,13 @@ int main(int argc, char** argv) {
     reader *read = new reader(infile, queue);
     writer *write = new writer(outfile, queue);
 
-    write->run();
     read->run();
+    write->run();
 
     while (!queue->empty()) {
         usleep(1);
     }
+
 
     delete read;
     delete write;

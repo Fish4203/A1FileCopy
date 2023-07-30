@@ -9,7 +9,7 @@
 #ifndef READER
 #define READER
 class reader {
-   public:
+public:
     /* create a reader that reads each line of the file and appends it to the
      * writer's queue
      */
@@ -22,8 +22,9 @@ class reader {
 
 
 
-   private:
+private:
     std::ifstream in;
     std::deque<std::string> *queue;
+    int currt;
 };
 #endif

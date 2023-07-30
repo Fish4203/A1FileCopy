@@ -5,6 +5,13 @@
 
 #include "writer.h"
 pthread_mutex_t wl;
+pthread_cond_t condw[5];
+
+class Argstw {
+public:
+    int id;
+    writer *write;
+};
 
 /**
  * provide your implementation for the writer functions here
@@ -22,14 +29,24 @@ writer::~writer() {
 void *writer::runner(void * args) {
 
     while (true) {
+        // std::cout << (*(Argstw*)args).id << std::endl;
+
         pthread_mutex_lock(&wl);
-        if ((*(writer*)args).queue->empty()) {
+        if ((*(Argstw*)args).write->queue->empty()) {
             usleep(1);
         } else {
-
-            (*(writer*)args).out << (*(writer*)args).queue->front() << std::endl;
-            (*(writer*)args).queue->pop_front();
+            (*(Argstw*)args).write->out << (*(Argstw*)args).write->queue->front() << std::endl;
+            (*(Argstw*)args).write->queue->pop_front();
         }
+
+        pthread_cond_signal(&condw[(*(Argstw*)args).id]);
+
+        if ((*(Argstw*)args).id == 4) {
+            pthread_cond_wait(&condw[0], &wl);
+        } else {
+            pthread_cond_wait(&condw[(*(Argstw*)args).id +1], &wl);
+        }
+
         pthread_mutex_unlock(&wl);
     }
 }
@@ -39,6 +56,9 @@ void writer::run() {
     int i;
 
     for( i = 0; i < 5; i++ ) {
-        pthread_create(&threads[i], NULL, writer::runner, this);
+        Argstw *arg = new Argstw();
+        arg->id = i;
+        arg->write = this;
+        pthread_create(&threads[i], NULL, writer::runner, arg);
     }
 }
