@@ -22,11 +22,6 @@ int main(int argc, char** argv) {
     read->run();
     write->run();
 
-    while (!queue->empty()) {
-        usleep(1);
-    }
-
-
     delete read;
     delete write;
     delete queue;
