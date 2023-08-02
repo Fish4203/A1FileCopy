@@ -8,12 +8,15 @@
 #include <string>
 #ifndef READER
 #define READER
+
+
+
 class reader {
 public:
     /* create a reader that reads each line of the file and appends it to the
      * writer's queue
      */
-    reader(const std::string infile, std::deque<std::string> *queue);
+    reader(const std::string infile, std::string *writeArray, int n, pthread_barrier_t *barrersRead, pthread_barrier_t *barrersWrite);
     ~reader();
     /* perform the reading from the file */
     static void* runner(void* args);
@@ -22,9 +25,11 @@ public:
 
 
 
+    int n;
 private:
     std::ifstream in;
-    std::deque<std::string> *queue;
-    int currt;
+    std::string *writeArray;
+    pthread_barrier_t *barrersRead;
+    pthread_barrier_t *barrersWrite;
 };
 #endif

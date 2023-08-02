@@ -4,71 +4,54 @@
  **/
 
 #include "writer.h"
-pthread_mutex_t wl;
-pthread_cond_t condw[5];
-
-class Argstw {
-public:
-    int id;
-    writer *write;
-};
-
 /**
  * provide your implementation for the writer functions here
  **/
-writer::writer(const std::string outfile, std::deque<std::string> *queue) {
-    this->queue = queue;
+writer::writer(const std::string outfile, std::string *writeArray, int n, pthread_barrier_t *barrersRead, pthread_barrier_t *barrersWrite) {
+    this->writeArray = writeArray;
     this->running = true;
     this->out.open(outfile);
+    this->n = n;
+    this->barrersRead = barrersRead;
+    this->barrersWrite = barrersWrite;
 }
 
 writer::~writer() {
-    // this->out << " " << std::endl;
     this->out.close();
 }
 
 void *writer::runner(void * args) {
+    while ((*(writer*)(*(Arg*)args).object).running) {
+        // wait for read
+        std::cout << "write thread " << (*(Arg*)args).id << " waiting at read" << std::endl;
+        pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersRead[(*(Arg*)args).id]));
 
-    while ((*(Argstw*)args).write->queue->size() > 5) {
-        // std::cout << (*(Argstw*)args).id << "w" << std::endl;
+        // write to file
+        // std::cout << "write thread " << (*(Arg*)args).id << " writeing" << std::endl;
+        (*(writer*)(*(Arg*)args).object).out  << (*(Arg*)args).id << std::endl;
 
-        pthread_mutex_lock(&wl);
-        // std::cout << "w" << std::endl;
 
-        (*(Argstw*)args).write->out << (*(Argstw*)args).write->queue->front() << std::endl;
-        (*(Argstw*)args).write->queue->pop_front();
-
-        pthread_cond_signal(&condw[(*(Argstw*)args).id]);
-
-        if ((*(Argstw*)args).id == 4) {
-            pthread_cond_wait(&condw[0], &wl);
+        if ((*(Arg*)args).id == (*(reader*)(*(Arg*)args).object).n -1) {
+            pthread_barrier_wait(&((*(reader*)(*(Arg*)args).object).barrersRead[0]));
         } else {
-            pthread_cond_wait(&condw[(*(Argstw*)args).id +1], &wl);
+            pthread_barrier_wait(&((*(reader*)(*(Arg*)args).object).barrersRead[(*(Arg*)args).id +1]));
         }
-
-        pthread_mutex_unlock(&wl);
+        std::cout << "write thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
+        pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersWrite[(*(Arg*)args).id]));
     }
-    pthread_cond_signal(&condw[(*(Argstw*)args).id]);
     pthread_exit(NULL);
 }
 
 void writer::run() {
-    // std::cout << "w" << std::endl;
+    pthread_t threads[this->n];
 
-    pthread_t threads[5];
-    int i;
+    for(int i = 0; i < this->n; i++ ) {
+        std::cout << "creating write thread" << i << std::endl;
 
-    for( i = 0; i < 5; i++ ) {
-        Argstw *arg = new Argstw();
+        Arg *arg = new Arg();
         arg->id = i;
-        arg->write = this;
+        arg->object = this;
         pthread_create(&threads[i], NULL, writer::runner, arg);
-    }
-
-    for (i = 0; i < 5; i++) {
-        pthread_join(threads[i], NULL);
-        pthread_cond_destroy(&condw[i]);
-        // std::cout << "tree";
     }
 
     // std::cout << "w" << std::endl;
