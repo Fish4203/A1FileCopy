@@ -24,20 +24,22 @@ void *writer::runner(void * args) {
     while ((*(writer*)(*(Arg*)args).object).running) {
         // wait for read
         std::cout << "write thread " << (*(Arg*)args).id << " waiting at read" << std::endl;
-        pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersRead[(*(Arg*)args).id]));
-
+        if ((*(Arg*)args).id == 0) {
+            pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersRead[(*(writer*)(*(Arg*)args).object).n -1]));
+        } else {
+            pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersRead[(*(Arg*)args).id -1]));
+        }
         // write to file
         // std::cout << "write thread " << (*(Arg*)args).id << " writeing" << std::endl;
-        (*(writer*)(*(Arg*)args).object).out  << (*(Arg*)args).id << std::endl;
 
-
-        if ((*(Arg*)args).id == (*(reader*)(*(Arg*)args).object).n -1) {
-            pthread_barrier_wait(&((*(reader*)(*(Arg*)args).object).barrersRead[0]));
+        if ((*(Arg*)args).id == 0) {
+            (*(writer*)(*(Arg*)args).object).out << (*(writer*)(*(Arg*)args).object).writeArray[(*(writer*)(*(Arg*)args).object).n -1] << std::endl;
         } else {
-            pthread_barrier_wait(&((*(reader*)(*(Arg*)args).object).barrersRead[(*(Arg*)args).id +1]));
+            (*(writer*)(*(Arg*)args).object).out << (*(writer*)(*(Arg*)args).object).writeArray[(*(Arg*)args).id -1] << std::endl;
         }
+
         std::cout << "write thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
-        pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersWrite[(*(Arg*)args).id]));
+        pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersRead[(*(Arg*)args).id]));
     }
     pthread_exit(NULL);
 }

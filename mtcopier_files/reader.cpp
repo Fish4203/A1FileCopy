@@ -30,8 +30,8 @@ void *reader::runner(void * args) {
             pthread_barrier_wait(&((*(reader*)(*(Arg*)args).object).barrersRead[(*(Arg*)args).id -1]));
         }
 
-        std::cout << "read thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
-        pthread_barrier_wait(&((*(reader*)(*(Arg*)args).object).barrersWrite[(*(Arg*)args).id]));
+        // std::cout << "read thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
+        // pthread_barrier_wait(&((*(reader*)(*(Arg*)args).object).barrersWrite[(*(Arg*)args).id]));
 
         // read line
         // std::cout << "read thread " << (*(Arg*)args).id << " start read" << std::endl;

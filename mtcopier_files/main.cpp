@@ -39,15 +39,19 @@ int main(int argc, char** argv) {
 
     read->run();
     write->run();
+    pthread_t thread;
+
 
     sleep(3);
     std::cout << "bootstrap running" << std::endl;
-    pthread_barrier_wait(&barrersRead[n-1]);
+    pthread_create(&thread, NULL, bootstrap, barrersRead);
+    pthread_barrier_wait(&barrersRead[0]);
 
-    for (int i = 0; i < n-1; i++ ) {
-        // sleep(2);
-        pthread_barrier_wait(&barrersWrite[i]);
-    }
+
+    // for (int i = 0; i < n-1; i++ ) {
+    //     // sleep(2);
+    //     pthread_barrier_wait(&barrersWrite[i]);
+    // }
     //
     // for (int i = n; i > 0; i-- ) {
     //     pthread_barrier_wait(&barrersWrite[i]);
