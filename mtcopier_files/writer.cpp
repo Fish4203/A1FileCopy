@@ -9,6 +9,8 @@ writer::writer(const std::string outfile, std::string *writeArray, int n, pthrea
 }
 
 writer::~writer() {
+    // write the last of the file 
+    this->out << this->writeArray[0];
     // closing the file
     this->out.close();
     // closing the write threads
@@ -31,15 +33,15 @@ void *writer::runner(void * args) {
             // waiting for turn
             pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrers[(*(writer*)(*(Arg*)args).object).n -1]));
             // writing line from the write array from position -1
-            (*(writer*)(*(Arg*)args).object).out << (*(writer*)(*(Arg*)args).object).writeArray[(*(writer*)(*(Arg*)args).object).n -1] << std::endl;
+            (*(writer*)(*(Arg*)args).object).out << (*(writer*)(*(Arg*)args).object).writeArray[(*(writer*)(*(Arg*)args).object).n -1];
         } else {
             // waiting for turn
             pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrers[(*(Arg*)args).id -1]));
             // writing line from the write array from position -1
-            (*(writer*)(*(Arg*)args).object).out << (*(writer*)(*(Arg*)args).object).writeArray[(*(Arg*)args).id -1] << std::endl;
+            (*(writer*)(*(Arg*)args).object).out << (*(writer*)(*(Arg*)args).object).writeArray[(*(Arg*)args).id -1];
         }
 
-        // signaling write is done 
+        // signaling write is done
         // std::cout << "write thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
         pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrers[(*(Arg*)args).id]));
     }

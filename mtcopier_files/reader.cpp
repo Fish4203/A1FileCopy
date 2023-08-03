@@ -20,7 +20,7 @@ reader::~reader() {
 }
 
 void *reader::runner(void * args) {
-    std::string s;
+    char s[256];
     while (true) {
         // wait for turn to read
         // std::cout << "read thread " << (*(Arg*)args).id << " waiting at barrer -1" << std::endl;
@@ -29,18 +29,19 @@ void *reader::runner(void * args) {
         } else {
             pthread_barrier_wait(&((*(reader*)(*(Arg*)args).object).barrers[(*(Arg*)args).id -1]));
         }
-
-        // read line
+        // read file in 256 char chunks
         // std::cout << "read thread " << (*(Arg*)args).id << " start read" << std::endl;
-        if (!getline((*(reader*)(*(Arg*)args).object).in, s)) {
+        if (!(*(reader*)(*(Arg*)args).object).in.read(s, 256)) {
+            // this is needed to read the last of the file
+            (*(reader*)(*(Arg*)args).object).writeArray[0] = std::string(s, (*(reader*)(*(Arg*)args).object).in.gcount());
+            // std::cout << "read thread " << (*(Arg*)args).id << " end" << std::endl;
             // if the file is done then signal the exit barrer
             pthread_barrier_wait(&((*(reader*)(*(Arg*)args).object).barrers[(*(reader*)(*(Arg*)args).object).n]));
             // exit
             pthread_exit(NULL);
         }
-
         // add line to the write array at position i
-        (*(reader*)(*(Arg*)args).object).writeArray[(*(Arg*)args).id] = s;
+        (*(reader*)(*(Arg*)args).object).writeArray[(*(Arg*)args).id] = std::string(s, 256);
 
         // signaling that the next read write can begin
         // std::cout << "read thread " << (*(Arg*)args).id << " waiting at barrer" << std::endl;
