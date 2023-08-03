@@ -48,7 +48,6 @@ int main(int argc, char** argv) {
 
     // where the read and write threads will store data
     std::string writeArray[n];
-    writeArray[n-1] = "";
 
     // reader and writer
     reader *read = new reader(infile, writeArray, n, barrers);
@@ -69,7 +68,10 @@ int main(int argc, char** argv) {
 
     delete read;
     delete write;
-    // delete writeArray;
+    // for (int i = 0; i <= n; i++ ) {
+    //     pthread_barrier_destroy(&barrers[i]);
+    // }
+    // delete thread;
 
     return EXIT_SUCCESS;
 }
