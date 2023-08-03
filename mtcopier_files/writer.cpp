@@ -1,61 +1,60 @@
-/**
- * startup code provided by Paul Miller for COSC1114 - Operating Systems
- * Principles
- **/
-
 #include "writer.h"
-/**
- * provide your implementation for the writer functions here
- **/
-writer::writer(const std::string outfile, std::string *writeArray, int n, pthread_barrier_t *barrersRead, pthread_barrier_t *barrersWrite) {
+
+writer::writer(const std::string outfile, std::string *writeArray, int n, pthread_barrier_t *barrers) {
+    // initalising the verabes
     this->writeArray = writeArray;
-    this->running = true;
     this->out.open(outfile);
     this->n = n;
-    this->barrersRead = barrersRead;
-    this->barrersWrite = barrersWrite;
+    this->barrers = barrers;
 }
 
 writer::~writer() {
+    // closing the file
     this->out.close();
+    // closing the write threads
+     for (int i = 0; i < this->n; i++) {
+         // std::cout << "write thread " << i << " kill" << std::endl;
+         pthread_cancel(this->threads[i]);
+     }
 }
 
 void *writer::runner(void * args) {
-    while ((*(writer*)(*(Arg*)args).object).running) {
-        // wait for read
-        std::cout << "write thread " << (*(Arg*)args).id << " waiting at read" << std::endl;
-        if ((*(Arg*)args).id == 0) {
-            pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersRead[(*(writer*)(*(Arg*)args).object).n -1]));
-        } else {
-            pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersRead[(*(Arg*)args).id -1]));
-        }
-        // write to file
-        // std::cout << "write thread " << (*(Arg*)args).id << " writeing" << std::endl;
+    // preventing the 1 thread from writing an empty line at the start of the file
+    if ((*(Arg*)args).id == 1) {
+        pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrers[0]));
+        pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrers[1]));
+    }
 
+    while (true) {
+        // std::cout << "write thread " << (*(Arg*)args).id << " waiting at read" << std::endl;
         if ((*(Arg*)args).id == 0) {
+            // waiting for turn
+            pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrers[(*(writer*)(*(Arg*)args).object).n -1]));
+            // writing line from the write array from position -1
             (*(writer*)(*(Arg*)args).object).out << (*(writer*)(*(Arg*)args).object).writeArray[(*(writer*)(*(Arg*)args).object).n -1] << std::endl;
         } else {
+            // waiting for turn
+            pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrers[(*(Arg*)args).id -1]));
+            // writing line from the write array from position -1
             (*(writer*)(*(Arg*)args).object).out << (*(writer*)(*(Arg*)args).object).writeArray[(*(Arg*)args).id -1] << std::endl;
         }
 
-        std::cout << "write thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
-        pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrersRead[(*(Arg*)args).id]));
+        // signaling write is done 
+        // std::cout << "write thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
+        pthread_barrier_wait(&((*(writer*)(*(Arg*)args).object).barrers[(*(Arg*)args).id]));
     }
     pthread_exit(NULL);
 }
 
 void writer::run() {
-    pthread_t threads[this->n];
+    // making the thread ids
+    this->threads = new pthread_t[this->n];
 
+    // creating the threads
     for(int i = 0; i < this->n; i++ ) {
-        std::cout << "creating write thread" << i << std::endl;
-
         Arg *arg = new Arg();
         arg->id = i;
         arg->object = this;
-        pthread_create(&threads[i], NULL, writer::runner, arg);
+        pthread_create(&this->threads[i], NULL, writer::runner, arg);
     }
-
-    // std::cout << "w" << std::endl;
-
 }

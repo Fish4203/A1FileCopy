@@ -5,11 +5,11 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <deque>
 #include <unistd.h>
 #ifndef WRITER
 #define WRITER
 
+// dummy class used to pass args to threads
 class Arg {
 public:
     int id;
@@ -17,21 +17,22 @@ public:
 };
 
 class writer {
-   public:
-    /**
-     * creates the writer instance that writes out to the file
-     **/
-    writer(const std::string outfile, std::string *writeArray, int n, pthread_barrier_t *barrersRead, pthread_barrier_t *barrersWrite);
+public:
+    // initaliser
+    writer(const std::string outfile, std::string *writeArray, int n, pthread_barrier_t *barrers);
     ~writer();
-    static void* runner(void* args);
-    void run();
 
+    // thread
+    static void* runner(void* args);
+    // thread runner
+    void run();
+    // number of threads
     int n;
-   private:
+private:
+    // atributes
     std::ofstream out;
     std::string *writeArray;
-    bool running;
-    pthread_barrier_t *barrersRead;
-    pthread_barrier_t *barrersWrite;
+    pthread_barrier_t *barrers;
+    pthread_t *threads;
 };
 #endif

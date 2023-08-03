@@ -13,23 +13,24 @@
 
 class reader {
 public:
-    /* create a reader that reads each line of the file and appends it to the
-     * writer's queue
-     */
-    reader(const std::string infile, std::string *writeArray, int n, pthread_barrier_t *barrersRead, pthread_barrier_t *barrersWrite);
+    // initaliser
+    reader(const std::string infile, std::string *writeArray, int n, pthread_barrier_t *barrers);
     ~reader();
-    /* perform the reading from the file */
+
+    // thread
     static void* runner(void* args);
-
+    // thread runner
     void run();
-
-
-
+    // number of threads
     int n;
+
+
+
 private:
+    // atributes
     std::ifstream in;
     std::string *writeArray;
-    pthread_barrier_t *barrersRead;
-    pthread_barrier_t *barrersWrite;
+    pthread_barrier_t *barrers;
+    pthread_t *threads;
 };
 #endif
