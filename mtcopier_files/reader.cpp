@@ -15,35 +15,32 @@ reader::~reader() {
     this->in.close();
 
     // closing all the threads
-    for (int i = 1; i < this->n; i++) {
-        std::cout << "read thread " << i << " join" << std::endl;
+    for (int i = 0; i < this->n; i++) {
+        // std::cout << "read thread " << i << " join" << std::endl;
         pthread_join(this->threads[i], NULL);
     }
     delete this->threads;
 }
 
 void *reader::runner(void * args) {
-    int id = (*(Arg*)args).id;
+    int id = (*(Arg*)args).id; // the id of the thread
     reader *object = (reader*)(*(Arg*)args).object;
-    char s[256];
+    char s[CHARCOUNT];
     while (true) {
-        // wait for turn to read
-        std::cout << "read thread " << MININDEX(id, object->n) << " look" << std::endl;
+        // wait for turn id - 1 thread to finish
         pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
 
-        // brake if program need stoping
+        // brake if the program is done
         if (!(*object->runing)) {
-            std::cout << "read thread " << id << " exiting" << std::endl;
             pthread_barrier_wait(&(object->barrers[id]));
             break;
         }
 
         // read file in 256 char chunks
-        // std::cout << "read thread " << (*(Arg*)args).id << " start read" << std::endl;
-        if (!object->in.read(s, 256)) {
+        if (!object->in.read(s, CHARCOUNT)) {
             // when the file ends
-            // this is needed to read the last of the file
-            object->writeArray[0] = std::string(s, object->in.gcount());
+            // this is needed to read the last of the file it goes to a specal spot 
+            object->writeArray[object->n] = std::string(s, object->in.gcount());
             object->writeArray[id] = "";
             (*object->runing) = false;
 
@@ -51,12 +48,13 @@ void *reader::runner(void * args) {
 
             std::cout << "read thread " << id << " eof" << std::endl;
             pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
+            // std::cout << "read thread " << id << " free" << std::endl;
 
 
             break;
         } else {
             // add line to the write array at position i
-            object->writeArray[id] = std::string(s, 256);
+            object->writeArray[id] = std::string(s, CHARCOUNT);
         }
 
         // signaling that the next read write can begin

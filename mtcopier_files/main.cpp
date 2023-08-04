@@ -9,9 +9,7 @@
 
 // bootstraps the program by activating the barrier[0]
 void *bootstrap(void *args) {
-    std::cout << "bootstrap running" << std::endl;
     pthread_barrier_wait(&(*(pthread_barrier_t*)args));
-    std::cout << "bootstrap fin" << std::endl;
     pthread_exit(NULL);
 }
 
@@ -48,7 +46,7 @@ int main(int argc, char** argv) {
     pthread_barrier_init(&barrers[n], 0, n+1);
 
     // where the read and write threads will store data
-    std::string writeArray[n];
+    std::string writeArray[n+1];
     // true when the program is running
     bool run = true;
 
@@ -60,27 +58,18 @@ int main(int argc, char** argv) {
     read->run();
     write->run();
 
-
     // starts the write by having 2 threads waiting at barrer[0]
     pthread_t thread;
     pthread_create(&thread, NULL, bootstrap, barrers);
     pthread_barrier_wait(&barrers[0]);
     pthread_join(thread, NULL);
 
-    // waits for a read thread
+    // waits for the read threads to be done
     pthread_barrier_wait(&barrers[n]);
-    std::cout << "end" << std::endl;
-    // for (int i = 0; i < n; i++ ) {
-    //     pthread_create(&thread, NULL, bootstrap, &barrers[i]);
-    //     pthread_barrier_wait(&barrers[i]);
-    //     pthread_join(thread, NULL);
-    // }
-    // std::cout << "end" << std::endl;
 
-
+    // clean up
     delete read;
     delete write;
-    // delete thread;
 
     return EXIT_SUCCESS;
 }

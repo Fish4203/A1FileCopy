@@ -11,12 +11,12 @@ writer::writer(const std::string outfile, std::string *writeArray, int n, pthrea
 
 writer::~writer() {
     // write the last of the file
-    this->out << this->writeArray[0];
+    this->out << this->writeArray[this->n];
     // closing the file
     this->out.close();
     // closing the write threads
      for (int i = 0; i < this->n; i++) {
-         std::cout << "write thread " << i << " join" << std::endl;
+         // std::cout << "write thread " << i << " join" << std::endl;
          pthread_join(this->threads[i], NULL);
      }
      delete this->threads;
@@ -36,7 +36,7 @@ void *writer::runner(void * args) {
     while (true) {
         pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
 
-        if (!(*object->runing) && object->writeArray[id] != "") {
+        if (!(*object->runing) && object->writeArray[id].length() == CHARCOUNT) {
             // std::cout << "write thread " << id << " exiting " << std::endl;
             pthread_barrier_wait(&(object->barrers[id]));
             break;
@@ -47,7 +47,7 @@ void *writer::runner(void * args) {
         // std::cout << "write thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
         pthread_barrier_wait(&(object->barrers[id]));
 
-        if (object->writeArray[id] == "") {
+        if (object->writeArray[id].length() != CHARCOUNT) {
             // std::cout << "write thread " << id << " wait" << std::endl;
             pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
             break;
