@@ -16,17 +16,14 @@ writer::~writer() {
     this->out.close();
     // closing the write threads
      for (int i = 0; i < this->n; i++) {
-         // std::cout << "write thread " << i << " join" << std::endl;
          pthread_join(this->threads[i], NULL);
      }
      delete this->threads;
-     // delete this->writeArray;
 }
 
 void *writer::runner(void * args) {
-    int id = (*(Arg*)args).id;
-    writer *object = (writer*)(*(Arg*)args).object;
-    // delete (Arg*)args;
+    int id = (*(Arg*)args).id; // id of the thread
+    writer *object = (writer*)(*(Arg*)args).object; // basicaly this
     // preventing the 1 thread from writing an empty line at the start of the file
     if (id == 1) {
         pthread_barrier_wait(&(object->barrers[0]));
@@ -34,26 +31,28 @@ void *writer::runner(void * args) {
     }
 
     while (true) {
+        // waiting for the -1 threads to finish
         pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
 
+        // if the program has stoped and sll the writing is done
         if (!(*object->runing) && object->writeArray[id].length() == CHARCOUNT) {
-            // std::cout << "write thread " << id << " exiting " << std::endl;
+            // signaling the next threads to runn
             pthread_barrier_wait(&(object->barrers[id]));
             break;
         }
+        // writing id -1 line to the file
         object->out << object->writeArray[MININDEX(id, object->n)];
 
-        // signaling write is done
-        // std::cout << "write thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
+        // signaling the next threads to runn
         pthread_barrier_wait(&(object->barrers[id]));
 
+        // if the id read thread did the last read then wait for id -1 threads to finish
         if (object->writeArray[id].length() != CHARCOUNT) {
-            // std::cout << "write thread " << id << " wait" << std::endl;
             pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
             break;
         }
     }
-    // std::cout << "write thread " << id << " done" << std::endl;
+    // delete the args object
     delete (Arg*)args;
     pthread_exit(NULL);
 }
