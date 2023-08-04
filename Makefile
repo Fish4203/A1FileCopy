@@ -9,15 +9,24 @@
 
 .default: all
 
-all: copy
+all: copier mtcopier
 
-clean:
-	rm -rf copy *.o *.dSYM
+clean: cclean mtclean
 
-copy: writer.o reader.o main.o
+cclean:
+	rm -rf copier copier_files/*.o copier_files/*.dSYM
+
+mtclean:
+	rm -rf mtcopier mtcopier_files/*.o mtcopier_files/*.dSYM
+
+copier: copier_files/writer.o copier_files/reader.o copier_files/main.o
 	g++ -Wall -Werror -std=c++20 -g -O -o $@ $^
-	# g++ -std=c++14 -g -O -o $@ $^
 
-%.o: mtcopier_files/%.cpp
-	g++ -Wall -Werror -std=c++20 -g -O -c $^
-	# g++ -std=c++14 -g -O -c $^
+copier_files/%.o: %.cpp
+	g++ -Wall -Werror -std=c++20 -g -O -c copier_files/$^
+
+mtcopier: mtcopier_files/writer.o mtcopier_files/reader.o mtcopier_files/main.o
+	g++ -Wall -Werror -std=c++20 -g -O -o $@ $^
+
+mtcopier_files/%.o: %.cpp
+	g++ -Wall -Werror -std=c++20 -g -O -c mtcopier_files/$^
