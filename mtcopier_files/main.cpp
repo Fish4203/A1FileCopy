@@ -9,8 +9,9 @@
 
 // bootstraps the program by activating the barrier[0]
 void *bootstrap(void *args) {
-    // std::cout << "bootstrap running" << std::endl;
+    std::cout << "bootstrap running" << std::endl;
     pthread_barrier_wait(&(*(pthread_barrier_t*)args));
+    std::cout << "bootstrap fin" << std::endl;
     pthread_exit(NULL);
 }
 
@@ -44,14 +45,16 @@ int main(int argc, char** argv) {
         pthread_barrier_init(&barrers[i], 0, 4);
     }
     // the n barrer thread will cause the main thread to wait for a read thread to reach the end of the file
-    pthread_barrier_init(&barrers[n], 0, 2);
+    pthread_barrier_init(&barrers[n], 0, n+1);
 
     // where the read and write threads will store data
     std::string writeArray[n];
+    // true when the program is running
+    bool run = true;
 
     // reader and writer
-    reader *read = new reader(infile, writeArray, n, barrers);
-    writer *write = new writer(outfile, writeArray, n, barrers);
+    reader *read = new reader(infile, writeArray, n, barrers, &run);
+    writer *write = new writer(outfile, writeArray, n, barrers, &run);
 
     // creates the read and write threads
     read->run();
@@ -62,15 +65,21 @@ int main(int argc, char** argv) {
     pthread_t thread;
     pthread_create(&thread, NULL, bootstrap, barrers);
     pthread_barrier_wait(&barrers[0]);
+    pthread_join(thread, NULL);
 
     // waits for a read thread
     pthread_barrier_wait(&barrers[n]);
+    std::cout << "end" << std::endl;
+    // for (int i = 0; i < n; i++ ) {
+    //     pthread_create(&thread, NULL, bootstrap, &barrers[i]);
+    //     pthread_barrier_wait(&barrers[i]);
+    //     pthread_join(thread, NULL);
+    // }
+    // std::cout << "end" << std::endl;
+
 
     delete read;
     delete write;
-    // for (int i = 0; i <= n; i++ ) {
-    //     pthread_barrier_destroy(&barrers[i]);
-    // }
     // delete thread;
 
     return EXIT_SUCCESS;

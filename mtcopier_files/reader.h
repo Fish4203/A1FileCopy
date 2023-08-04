@@ -10,11 +10,10 @@
 #define READER
 
 
-
 class reader {
 public:
     // initaliser
-    reader(const std::string infile, std::string *writeArray, int n, pthread_barrier_t *barrers);
+    reader(const std::string infile, std::string *writeArray, int n, pthread_barrier_t *barrers, bool *runing);
     ~reader();
 
     // thread
@@ -28,6 +27,7 @@ public:
 
 private:
     // atributes
+    bool *runing;
     std::ifstream in;
     std::string *writeArray;
     pthread_barrier_t *barrers;

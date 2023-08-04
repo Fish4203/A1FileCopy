@@ -1,7 +1,8 @@
 #include "writer.h"
 
-writer::writer(const std::string outfile, std::string *writeArray, int n, pthread_barrier_t *barrers) {
+writer::writer(const std::string outfile, std::string *writeArray, int n, pthread_barrier_t *barrers, bool *runing) {
     // initalising the verabes
+    this->runing = runing;
     this->writeArray = writeArray;
     this->out.open(outfile);
     this->n = n;
@@ -15,8 +16,8 @@ writer::~writer() {
     this->out.close();
     // closing the write threads
      for (int i = 0; i < this->n; i++) {
-         // std::cout << "write thread " << i << " kill" << std::endl;
-         pthread_cancel(this->threads[i]);
+         std::cout << "write thread " << i << " join" << std::endl;
+         pthread_join(this->threads[i], NULL);
      }
      delete this->threads;
      // delete this->writeArray;
@@ -25,7 +26,7 @@ writer::~writer() {
 void *writer::runner(void * args) {
     int id = (*(Arg*)args).id;
     writer *object = (writer*)(*(Arg*)args).object;
-    delete (Arg*)args;
+    // delete (Arg*)args;
     // preventing the 1 thread from writing an empty line at the start of the file
     if (id == 1) {
         pthread_barrier_wait(&(object->barrers[0]));
@@ -33,23 +34,27 @@ void *writer::runner(void * args) {
     }
 
     while (true) {
-        // std::cout << "write thread " << (*(Arg*)args).id << " waiting at read" << std::endl;
-        if (id == 0) {
-            // waiting for turn
-            pthread_barrier_wait(&(object->barrers[object->n -1]));
-            // writing line from the write array from position -1
-            object->out << object->writeArray[object->n -1];
-        } else {
-            // waiting for turn
-            pthread_barrier_wait(&(object->barrers[id -1]));
-            // writing line from the write array from position -1
-            object->out << object->writeArray[id -1];
+        pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
+
+        if (!(*object->runing) && object->writeArray[id] != "") {
+            // std::cout << "write thread " << id << " exiting " << std::endl;
+            pthread_barrier_wait(&(object->barrers[id]));
+            break;
         }
+        object->out << object->writeArray[MININDEX(id, object->n)];
 
         // signaling write is done
         // std::cout << "write thread " << (*(Arg*)args).id << " waiting at write" << std::endl;
         pthread_barrier_wait(&(object->barrers[id]));
+
+        if (object->writeArray[id] == "") {
+            // std::cout << "write thread " << id << " wait" << std::endl;
+            pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
+            break;
+        }
     }
+    // std::cout << "write thread " << id << " done" << std::endl;
+    delete (Arg*)args;
     pthread_exit(NULL);
 }
 

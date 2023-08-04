@@ -9,6 +9,7 @@
 #ifndef WRITER
 #define WRITER
 
+#define MININDEX(i, n) (((i) + (n-1)) % (n))
 // dummy class used to pass args to threads
 class Arg {
 public:
@@ -19,7 +20,7 @@ public:
 class writer {
 public:
     // initaliser
-    writer(const std::string outfile, std::string *writeArray, int n, pthread_barrier_t *barrers);
+    writer(const std::string outfile, std::string *writeArray, int n, pthread_barrier_t *barrers, bool *runing);
     ~writer();
 
     // thread
@@ -30,6 +31,7 @@ public:
     int n;
 private:
     // atributes
+    bool *runing;
     std::ofstream out;
     std::string *writeArray;
     pthread_barrier_t *barrers;
