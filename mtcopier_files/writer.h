@@ -6,13 +6,15 @@
 #include <iostream>
 #include <string>
 #include <unistd.h>
+#include <time.h>
+#include <queue>
 #ifndef WRITER
 #define WRITER
 
 // returns id - 1 mod n
 #define MININDEX(i, n) (((i) + (n-1)) % (n))
 // amount of character to get from the file at once
-#define CHARCOUNT 256
+#define CHARCOUNT 2048
 // dummy class used to pass args to threads
 class Arg {
 public:
@@ -32,6 +34,8 @@ public:
     void run();
     // number of threads
     int n;
+    std::queue<clock_t> Stime;
+    std::queue<clock_t> Etime;
 private:
     // atributes
     bool *runing;

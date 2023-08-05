@@ -20,6 +20,8 @@ reader::~reader() {
         pthread_join(this->threads[i], NULL);
     }
     delete this->threads;
+
+    // std::cout << "read down time" << this->downtime / (double)CLOCKS_PER_SEC << std::endl;
 }
 
 void *reader::runner(void * args) {
@@ -29,7 +31,7 @@ void *reader::runner(void * args) {
     while (true) {
         // wait for turn id - 1 thread to finish
         pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
-
+        object->Stime.push(clock());
         // brake if the program is done
         if (!(*object->runing)) {
             pthread_barrier_wait(&(object->barrers[id]));
@@ -46,6 +48,8 @@ void *reader::runner(void * args) {
             // tells the other threads to stop
             (*object->runing) = false;
 
+            object->Etime.push(clock());
+
             // signals the next thread to start
             pthread_barrier_wait(&(object->barrers[id]));
             // waits for the previous thread to finish
@@ -56,6 +60,7 @@ void *reader::runner(void * args) {
             object->writeArray[id] = std::string(s, CHARCOUNT);
         }
 
+        object->Etime.push(clock());
         // signaling that the next threads can begin
         pthread_barrier_wait(&(object->barrers[id]));
     }

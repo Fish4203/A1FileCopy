@@ -26,7 +26,7 @@ copier_files/%.o: %.cpp
 	g++ -Wall -Werror -std=c++20 -g -O -c copier_files/$^
 
 mtcopier: mtcopier_files/writer.o mtcopier_files/reader.o mtcopier_files/main.o
-	g++ -Wall -Werror -std=c++20 -g -O -o $@ $^
+	g++ -Wall -Werror -std=c++20 -lpthread -g -O -o $@ $^
 
 mtcopier_files/%.o: %.cpp
 	g++ -Wall -Werror -std=c++20 -g -O -c mtcopier_files/$^

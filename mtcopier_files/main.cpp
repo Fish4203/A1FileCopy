@@ -15,6 +15,8 @@ void *bootstrap(void *args) {
 
 
 int main(int argc, char** argv) {
+    clock_t start = clock();
+
     if (argc != 4) {
         std::cout << "wrong number of inputs" << std::endl;
         return 1;
@@ -67,9 +69,38 @@ int main(int argc, char** argv) {
     // waits for the read threads to be done
     pthread_barrier_wait(&barrers[n]);
 
+    read->Stime.pop();
+    write->Stime.pop();
+
+    double readTotal = 0;
+    double writeTotal = 0;
+    double startDiff = 0;
+    double endDiff = 0;
+    int j = 0;
+
+    while (!write->Etime.empty()) {
+        readTotal += read->Stime.front() - read->Etime.front();
+        writeTotal += write->Stime.front() - write->Etime.front();
+        startDiff += read->Stime.front() - write->Stime.front();
+        endDiff += read->Etime.front() - write->Etime.front();
+        // std::cout << read->Etime.front() - write->Stime.front() <<"read to write time" << std::endl;
+        // std::cout << write->Etime.front() - read->Stime.front() <<"write to read time" << std::endl;
+        read->Stime.pop();
+        read->Etime.pop();
+        write->Stime.pop();
+        write->Etime.pop();
+        j++;
+    }
+
+    std::cout << "read total" << readTotal / (double)CLOCKS_PER_SEC << std::endl;
+    std::cout << "write total" << writeTotal / (double)CLOCKS_PER_SEC << std::endl;
+    std::cout << "start diff in clocks" << (startDiff / j) << std::endl;
+    std::cout << "end diff in clock" << (endDiff / j) << std::endl;
+    std::cout << "total" << (clock() - start) / (double)CLOCKS_PER_SEC << std::endl;
     // clean up
     delete read;
     delete write;
+
 
     return EXIT_SUCCESS;
 }

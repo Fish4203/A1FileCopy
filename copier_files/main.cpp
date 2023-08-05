@@ -4,9 +4,11 @@
  **/
 #include "reader.h"
 #include "writer.h"
+#include <time.h>
 #include <cstdlib>
 /* global variables if needed go here */
 int main(int argc, char** argv) {
+    clock_t start = clock();
     /* check command line arguments */
     /* load the file and copy it to the destination */
     std::string infile = argv[1];
@@ -25,6 +27,6 @@ int main(int argc, char** argv) {
 
     delete queue;
 
-
+    std::cout << "time taken" << (clock() - start) / (double)CLOCKS_PER_SEC << std::endl;
     return EXIT_SUCCESS;
 }

@@ -33,6 +33,7 @@ void *writer::runner(void * args) {
     while (true) {
         // waiting for the -1 threads to finish
         pthread_barrier_wait(&(object->barrers[MININDEX(id, object->n)]));
+        object->Stime.push(clock());
 
         // if the program has stoped and sll the writing is done
         if (!(*object->runing) && object->writeArray[id].length() == CHARCOUNT) {
@@ -43,6 +44,7 @@ void *writer::runner(void * args) {
         // writing id -1 line to the file
         object->out << object->writeArray[MININDEX(id, object->n)];
 
+        object->Etime.push(clock());
         // signaling the next threads to runn
         pthread_barrier_wait(&(object->barrers[id]));
 

@@ -22,9 +22,8 @@ public:
     void run();
     // number of threads
     int n;
-
-
-
+    std::queue<clock_t> Stime;
+    std::queue<clock_t> Etime;
 private:
     // atributes
     bool *runing;
