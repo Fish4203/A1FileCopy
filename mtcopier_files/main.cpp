@@ -16,10 +16,14 @@ void *bootstrap(void *args) {
 
 int main(int argc, char** argv) {
     clock_t start = clock();
-
+    bool t = false;
     if (argc != 4) {
-        std::cout << "wrong number of inputs" << std::endl;
-        return 1;
+        if (argc == 5) {
+            t =true;
+        } else {
+            std::cout << "wrong number of inputs" << std::endl;
+            return 1;
+        }
     }
     // number of threads
     int n = std::stoi(argv[1]);
@@ -81,8 +85,8 @@ int main(int argc, char** argv) {
     while (!write->Etime.empty()) {
         readTotal += read->Stime.front() - read->Etime.front();
         writeTotal += write->Stime.front() - write->Etime.front();
-        startDiff += read->Stime.front() - write->Stime.front();
-        endDiff += read->Etime.front() - write->Etime.front();
+        // startDiff += abs(read->Stime.front() - write->Stime.front());
+        // endDiff += abs(read->Etime.front() - write->Etime.front());
         // std::cout << read->Etime.front() - write->Stime.front() <<"read to write time" << std::endl;
         // std::cout << write->Etime.front() - read->Stime.front() <<"write to read time" << std::endl;
         read->Stime.pop();
@@ -92,11 +96,15 @@ int main(int argc, char** argv) {
         j++;
     }
 
-    std::cout << "read total" << readTotal / (double)CLOCKS_PER_SEC << std::endl;
-    std::cout << "write total" << writeTotal / (double)CLOCKS_PER_SEC << std::endl;
-    std::cout << "start diff in clocks" << (startDiff / j) << std::endl;
-    std::cout << "end diff in clock" << (endDiff / j) << std::endl;
-    std::cout << "total" << (clock() - start) / (double)CLOCKS_PER_SEC << std::endl;
+    if (t) {
+        std::cout << "read total" << readTotal / (double)CLOCKS_PER_SEC << std::endl;
+        std::cout << "write total" << writeTotal / (double)CLOCKS_PER_SEC << std::endl;
+        std::cout << "read avg" << readTotal / j << std::endl;
+        std::cout << "write avg" << writeTotal / j << std::endl;
+        // std::cout << "start diff in clocks" << (startDiff / j) << std::endl;
+        // std::cout << "end diff in clock" << (endDiff / j) << std::endl;
+        std::cout << "total" << (clock() - start) / (double)CLOCKS_PER_SEC << std::endl;
+    }
     // clean up
     delete read;
     delete write;

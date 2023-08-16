@@ -9,6 +9,16 @@
 /* global variables if needed go here */
 int main(int argc, char** argv) {
     clock_t start = clock();
+
+    bool t = false;
+    if (argc != 3) {
+        if (argc == 4) {
+            t =true;
+        } else {
+            std::cout << "wrong number of inputs" << std::endl;
+            return 1;
+        }
+    }
     /* check command line arguments */
     /* load the file and copy it to the destination */
     std::string infile = argv[1];
@@ -27,6 +37,9 @@ int main(int argc, char** argv) {
 
     delete queue;
 
-    std::cout << "time taken" << (clock() - start) / (double)CLOCKS_PER_SEC << std::endl;
+    if (t) {
+        std::cout << "time taken" << (clock() - start) / (double)CLOCKS_PER_SEC << std::endl;
+
+    }
     return EXIT_SUCCESS;
 }
